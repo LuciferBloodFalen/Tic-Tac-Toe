@@ -7,6 +7,8 @@ from tkinter import messagebox
 
 
 import random
+import numpy as np
+import pandas as pd
 
 class TicTacToeGUI:
     def __init__(self, root):
@@ -155,23 +157,66 @@ class TicTacToeGUI:
                     self.root.after(500, self.ai_move)
 
     def ai_move(self):
-        # AI makes a random move
-        empty = [(i, j) for i in range(3) for j in range(3) if self.board[i][j] is None]
-        if empty:
-            row, col = random.choice(empty)
-            self.buttons[row][col]["text"] = "O"
-            self.board[row][col] = "O"
-            if self.check_winner():
-                self.show_end_options("Player O (AI) wins!")
-            elif self.is_full():
-                self.show_end_options("It's a draw!")
+        # AI uses numpy/pandas to predict and play optimal move
+        board_np = np.array([[self.board[i][j] if self.board[i][j] is not None else "" for j in range(3)] for i in range(3)])
+        empty = [(i, j) for i in range(3) for j in range(3) if board_np[i, j] == ""]
+
+        def can_win(b, player):
+            for i, j in empty:
+                b[i, j] = player
+                if self._check_winner_np(b, player):
+                    b[i, j] = ""
+                    return (i, j)
+                b[i, j] = ""
+            return None
+
+        # 1. Try to win
+        win_move = can_win(board_np.copy(), "O")
+        if win_move:
+            row, col = win_move
+        else:
+            # 2. Block player win
+            block_move = can_win(board_np.copy(), "X")
+            if block_move:
+                row, col = block_move
             else:
-                self.current_player = "X"
-                # Re-enable buttons for user
-                for i in range(3):
-                    for j in range(3):
-                        if self.buttons[i][j]["text"] == "":
-                            self.buttons[i][j]["state"] = "normal"
+                # 3. Take center if available
+                if board_np[1, 1] == "":
+                    row, col = 1, 1
+                else:
+                    # 4. Take a corner if available
+                    corners = [(i, j) for i in [0, 2] for j in [0, 2] if board_np[i, j] == ""]
+                    if corners:
+                        row, col = random.choice(corners)
+                    else:
+                        # 5. Otherwise, pick any empty
+                        row, col = random.choice(empty)
+
+        self.buttons[row][col]["text"] = "O"
+        self.board[row][col] = "O"
+        if self.check_winner():
+            self.show_end_options("Player O (AI) wins!")
+        elif self.is_full():
+            self.show_end_options("It's a draw!")
+        else:
+            self.current_player = "X"
+            for i in range(3):
+                for j in range(3):
+                    if self.buttons[i][j]["text"] == "":
+                        self.buttons[i][j]["state"] = "normal"
+
+    def _check_winner_np(self, b, player):
+        # Check winner for numpy board
+        for i in range(3):
+            if all(b[i, j] == player for j in range(3)):
+                return True
+            if all(b[j, i] == player for j in range(3)):
+                return True
+        if all(b[i, i] == player for i in range(3)):
+            return True
+        if all(b[i, 2 - i] == player for i in range(3)):
+            return True
+        return False
 
     def check_winner(self):
         # Check if current board has a winner
