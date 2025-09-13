@@ -209,7 +209,7 @@ class TicTacToeGUI:
         if "Player X wins" in message:
             self.score_x += 1
             winner = self.player_x_name if self.mode == "two" else "You (X)"
-        elif "Player O wins" in message:
+        elif "Player O wins" in message or "Player O (AI) wins" in message:
             self.score_o += 1
             winner = self.player_o_name if self.mode == "two" else "AI (O)"
         self.score_label.config(text=self.get_score_text())
