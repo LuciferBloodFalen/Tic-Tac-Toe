@@ -1,6 +1,12 @@
 
 
-# Basic Tic-Tac-Toe game in Python with GUI (Tkinter)
+
+"""
+Tic-Tac-Toe Game (Python, Tkinter)
+----------------------------------
+Single and two-player GUI Tic-Tac-Toe game with scoreboard, popups, and smart AI.
+AI uses numpy and pandas to predict and play optimal moves.
+"""
 
 import tkinter as tk
 from tkinter import messagebox
@@ -12,6 +18,11 @@ import pandas as pd
 
 class TicTacToeGUI:
     def __init__(self, root):
+        """
+        Initialize the main window, game state, and show mode selection.
+        Args:
+            root (tk.Tk): The main Tkinter window.
+        """
         # Initialize main window and game state
         self.root = root
         self.player_x_name = "X"
@@ -34,6 +45,9 @@ class TicTacToeGUI:
         tk.Button(self.mode_frame, text="Two Player", font=("Arial", 18), width=25, height=2, command=self.start_two_player).pack(pady=10)
 
     def start_single_player(self):
+        """
+        Start single player mode (vs AI), set up UI and scoreboard.
+        """
         # Start single player mode and set up UI
         self.mode = "single"
         self.mode_frame.destroy()
@@ -46,6 +60,9 @@ class TicTacToeGUI:
         self.create_widgets()
 
     def toggle_scoreboard(self):
+        """
+        Toggle scoreboard visibility in single player mode.
+        """
         # Show/hide scoreboard in single player mode
         if self.scoreboard_visible:
             self.score_frame.pack_forget()
@@ -57,6 +74,9 @@ class TicTacToeGUI:
             self.scoreboard_visible = True
 
     def start_two_player(self):
+        """
+        Start two player mode, prompt for player names.
+        """
         # Start two player mode and prompt for names
         self.mode = "two"
         self.mode_frame.destroy()
@@ -74,6 +94,9 @@ class TicTacToeGUI:
         tk.Button(self.name_frame, text="Start Game", font=("Arial", 16), command=self.confirm_names).pack(pady=10)
 
     def confirm_names(self):
+        """
+        Save player names and start the game.
+        """
         # Save player names and start game
         x_name = self.name_x_entry.get().strip()
         o_name = self.name_o_entry.get().strip()
@@ -83,6 +106,9 @@ class TicTacToeGUI:
         self.create_widgets()
         self.create_scoreboard()
     def create_scoreboard(self):
+        """
+        Create or update the scoreboard UI.
+        """
         # Create or update scoreboard UI
         # Destroy old scoreboard if it exists
         if hasattr(self, 'score_frame') and self.score_frame.winfo_exists():
@@ -98,6 +124,9 @@ class TicTacToeGUI:
             self.turn_label.pack(pady=5)
 
     def get_score_text(self):
+        """
+        Return formatted score string for scoreboard.
+        """
         # Return formatted score string
         if self.mode == "single":
             return f"Score - You (X): {self.score_x}   AI (O): {self.score_o}"
@@ -105,6 +134,9 @@ class TicTacToeGUI:
             return f"Score - {self.player_x_name}: {self.score_x}   {self.player_o_name}: {self.score_o}"
 
     def get_turn_text(self):
+        """
+        Return whose turn it is (for two player mode).
+        """
         # Return whose turn it is
         if self.current_player == "X":
             return f"Turn: {self.player_x_name}"
@@ -115,6 +147,9 @@ class TicTacToeGUI:
         return f"Score - {self.player_x_name}: {self.score_x}   {self.player_o_name}: {self.score_o}"
 
     def create_widgets(self):
+        """
+        Create game board buttons and layout.
+        """
         # Create game board buttons and layout
         self.frame = tk.Frame(self.root)
         self.frame.pack(pady=60, fill="both", expand=True)
@@ -133,6 +168,12 @@ class TicTacToeGUI:
             self.turn_label.config(text=self.get_turn_text())
 
     def on_click(self, row, col):
+        """
+        Handle user clicking a cell. Manages turn logic and triggers AI move.
+        Args:
+            row (int): Row index.
+            col (int): Column index.
+        """
         # Handle user clicking a cell
         # Prevent user from clicking during AI's turn
         if self.mode == "single" and self.current_player == "O":
@@ -157,6 +198,12 @@ class TicTacToeGUI:
                     self.root.after(500, self.ai_move)
 
     def ai_move(self):
+        """
+        AI predicts and plays optimal move using numpy/pandas:
+        - Tries to win
+        - Blocks player win
+        - Takes center/corner/any empty
+        """
         # AI uses numpy/pandas to predict and play optimal move
         board_np = np.array([[self.board[i][j] if self.board[i][j] is not None else "" for j in range(3)] for i in range(3)])
         empty = [(i, j) for i in range(3) for j in range(3) if board_np[i, j] == ""]
@@ -206,6 +253,14 @@ class TicTacToeGUI:
                         self.buttons[i][j]["state"] = "normal"
 
     def _check_winner_np(self, b, player):
+        """
+        Check winner for numpy board.
+        Args:
+            b (np.ndarray): Board array.
+            player (str): 'X' or 'O'.
+        Returns:
+            bool: True if player wins.
+        """
         # Check winner for numpy board
         for i in range(3):
             if all(b[i, j] == player for j in range(3)):
@@ -219,6 +274,11 @@ class TicTacToeGUI:
         return False
 
     def check_winner(self):
+        """
+        Check if current board has a winner.
+        Returns:
+            bool: True if someone wins.
+        """
         # Check if current board has a winner
         b = self.board
         for i in range(3):
@@ -233,10 +293,18 @@ class TicTacToeGUI:
         return False
 
     def is_full(self):
+        """
+        Check if board is full (draw).
+        Returns:
+            bool: True if board is full.
+        """
         # Check if board is full (draw)
         return all(self.board[i][j] is not None for i in range(3) for j in range(3))
 
     def reset_board(self):
+        """
+        Reset board for new game.
+        """
         # Reset board for new game
         self.current_player = "X"
         self.board = [[None for _ in range(3)] for _ in range(3)]
@@ -248,6 +316,11 @@ class TicTacToeGUI:
             self.turn_label.config(text=self.get_turn_text())
 
     def show_end_options(self, message):
+        """
+        Show popup for win/draw, update score, and offer play again/main menu.
+        Args:
+            message (str): Result message.
+        """
         # Show popup for win/draw and update score
         # Update score and message for both modes
         winner = None
@@ -278,6 +351,9 @@ class TicTacToeGUI:
         tk.Button(btn_frame, text="Main Menu", font=("Arial", 12), width=10, command=lambda: self._close_popup_and_main_menu(popup)).pack(side="right", padx=6)
 
     def _close_popup_and_play_again(self, popup):
+        """
+        Close popup and reset board for new game.
+        """
         # Close popup and reset board
         popup.destroy()
         self.reset_board()
@@ -286,6 +362,9 @@ class TicTacToeGUI:
                 self.buttons[i][j]["state"] = "normal"
 
     def _close_popup_and_main_menu(self, popup):
+        """
+        Close popup and return to main menu.
+        """
         # Close popup and return to main menu
         popup.destroy()
         self.frame.destroy()
@@ -296,6 +375,9 @@ class TicTacToeGUI:
         self.__init__(self.root)
 
     def play_again(self):
+        """
+        Play again after game ends (legacy, not used).
+        """
         # Play again after game ends
         self.end_frame.destroy()
         self.reset_board()
@@ -304,6 +386,9 @@ class TicTacToeGUI:
                 self.buttons[i][j]["state"] = "normal"
 
     def return_to_menu(self):
+        """
+        Return to main menu and reset scores.
+        """
         # Return to main menu and reset scores
         self.end_frame.destroy()
         self.frame.destroy()
@@ -317,7 +402,9 @@ class TicTacToeGUI:
 
 
 # Run the game
+
 if __name__ == "__main__":
+    # Start the Tic-Tac-Toe game
     root = tk.Tk()
     game = TicTacToeGUI(root)
     root.mainloop()
